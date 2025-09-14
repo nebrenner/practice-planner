@@ -67,13 +67,14 @@
 * Restarting the app preserves all entities and practices.
 * The app runs in Expo Go on Android and an emulator.
 
+## Web Preview
+
+* Build static PWA with `npx expo export --platform web`.
+* `.github/workflows/deploy-web.yml` publishes `dist/` to **GitHub Pages** on pushes to `main`.
+
 ## Commands (for the agent)
 
 ```bash
-# scaffold
-npx create-expo-app@latest practice-planner
-cd practice-planner
-
 # run
 npm start
 
