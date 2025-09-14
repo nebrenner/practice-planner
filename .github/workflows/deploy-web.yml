@@ -15,8 +15,7 @@ jobs:
         with: { node-version: 20 }
       - run: npm ci
       - run: |
-          npx expo export --platform web \
-            --public-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          EXPO_BASE_URL=${{ github.event.repository.name }} npx expo export --platform web
           cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
