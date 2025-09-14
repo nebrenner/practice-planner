@@ -7,10 +7,10 @@ export default function HomeScreen() {
       <Text style={styles.title}>Practice Planner</Text>
       <Text>Plan practices and run sessions offline.</Text>
       <View style={styles.links}>
-        <Link href="/teams" style={styles.link}>
+        <Link href="teams" style={styles.link}>
           Manage Teams
         </Link>
-        <Link href="/drills" style={styles.link}>
+        <Link href="drills" style={styles.link}>
           Manage Drills
         </Link>
       </View>
