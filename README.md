@@ -33,42 +33,39 @@ Plan practices, track drills, and run sessions with precise, computed start/end 
 
 ```
 /app                 # Expo Router screens
-  /(tabs)/
-  practice/
-  drills/
-  teams/
-  templates/
-  index.tsx
-/db
-  schema.sql         # DDL + migrations (v1)
-/src
-  /models            # TS types for entities
-  /data              # sqlite helpers, repositories
-  /features          # use-cases (createPractice, runPractice, etc.)
-  /ui                # shared components
-  /utils/time.ts     # timeline computations
-assets/
+  index.tsx          # home page
+/db                  # (future) schema and migrations
+/src                 # (future) models, data, features, ui, utils
 README.md
 AGENTS.md
 ```
 
 ### Quick Start
 
-1. **Install Node.js LTS on Windows** (includes npm). ([Node.js][1])
-2. **Create the app (Expo)**:
+1. **Install dependencies**
 
 ```bash
-npx create-expo-app@latest practice-planner
-cd practice-planner
-npm start
+npm install
 ```
 
-This uses `create-expo-app` to scaffold a project (default template includes Expo Router). ([Expo Documentation][2])
+2. **Run on Android or web**
 
-3. **Run on Android**
+```bash
+npm start       # then press 'a' for Android, or 'w' for web
+```
 
-* **Physical device (Expo Go):** With `npm start` running, scan the QR code in **Expo Go**; follow React Native’s “Running on device” guidance. ([React Native][3])
-* **Emulator:** Install Android Studio, create an AVD, then press **a** in the Expo terminal to launch on the emulator. (See setup section below.) ([Expo Documentation][4])
+### Web Preview (PWA)
+
+On pushes to `main`, GitHub Actions builds the web app and deploys it to **GitHub Pages**.
+This makes it easy to open the app on a phone via a URL without installing anything.
+
+To export locally:
+
+```bash
+npx expo export --platform web
+```
+
+The static site is emitted to `dist/` and can be served with any static server.
 
 ### Install SQLite
 
