@@ -17,6 +17,8 @@ jobs:
       - run: |
           EXPO_BASE_URL=${{ github.event.repository.name }} npx expo export --platform web
           cp dist/index.html dist/404.html
+          # Allow files in directories prefixed with '_' (like _expo/) to be served
+          touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:
