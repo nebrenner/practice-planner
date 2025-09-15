@@ -43,7 +43,7 @@ export default function PracticeView() {
           </Text>
           <View style={styles.descriptionButton}>
             <Button
-              title="View Description"
+              title="Details"
               onPress={() => showDrillDescription(s.drill)}
               disabled={!s.drill}
             />
