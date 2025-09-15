@@ -17,6 +17,19 @@ export type Drill = {
   defaultMinutes: number;
 };
 
+export type PracticeDrill = {
+  drillId: string;
+  minutes: number;
+};
+
+export type Practice = {
+  id: string;
+  teamId: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  drills: PracticeDrill[];
+};
+
 type DataContextType = {
   teams: Team[];
   addTeam: (name: string) => void;
@@ -26,6 +39,21 @@ type DataContextType = {
   addDrill: (name: string, defaultMinutes: number) => void;
   updateDrill: (id: string, name: string, defaultMinutes: number) => void;
   removeDrill: (id: string) => void;
+  practices: Practice[];
+  addPractice: (
+    teamId: string,
+    date: string,
+    startTime: string,
+    drills: PracticeDrill[]
+  ) => void;
+  updatePractice: (
+    id: string,
+    teamId: string,
+    date: string,
+    startTime: string,
+    drills: PracticeDrill[]
+  ) => void;
+  removePractice: (id: string) => void;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -37,6 +65,7 @@ function id() {
 export function DataProvider({ children }: { children: ReactNode }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [drills, setDrills] = useState<Drill[]>([]);
+  const [practices, setPractices] = useState<Practice[]>([]);
 
   // Load any saved data on first render
   useEffect(() => {
@@ -47,9 +76,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(raw) as {
           teams?: Team[];
           drills?: Drill[];
+          practices?: Practice[];
         };
         setTeams(parsed.teams ?? []);
         setDrills(parsed.drills ?? []);
+        setPractices(parsed.practices ?? []);
       }
     } catch {}
   }, []);
@@ -59,9 +90,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (typeof localStorage === 'undefined') return;
     localStorage.setItem(
       'practice-planner:data',
-      JSON.stringify({ teams, drills })
+      JSON.stringify({ teams, drills, practices })
     );
-  }, [teams, drills]);
+  }, [teams, drills, practices]);
 
   const addTeam = (name: string) => setTeams(t => [...t, { id: id(), name }]);
   const updateTeam = (id: string, name: string) =>
@@ -80,9 +111,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const removeDrill = (id: string) =>
     setDrills(d => d.filter(drill => drill.id !== id));
 
+  const addPractice = (
+    teamId: string,
+    date: string,
+    startTime: string,
+    drills: PracticeDrill[]
+  ) =>
+    setPractices(p => [...p, { id: id(), teamId, date, startTime, drills }]);
+  const updatePractice = (
+    id: string,
+    teamId: string,
+    date: string,
+    startTime: string,
+    drills: PracticeDrill[]
+  ) =>
+    setPractices(p =>
+      p.map(pr =>
+        pr.id === id ? { ...pr, teamId, date, startTime, drills } : pr
+      )
+    );
+  const removePractice = (id: string) =>
+    setPractices(p => p.filter(pr => pr.id !== id));
+
   return (
     <DataContext.Provider
-      value={{ teams, addTeam, updateTeam, removeTeam, drills, addDrill, updateDrill, removeDrill }}
+      value={{
+        teams,
+        addTeam,
+        updateTeam,
+        removeTeam,
+        drills,
+        addDrill,
+        updateDrill,
+        removeDrill,
+        practices,
+        addPractice,
+        updatePractice,
+        removePractice,
+      }}
     >
       {children}
     </DataContext.Provider>
