@@ -11,9 +11,12 @@
       "supportsTablet": true
     },
     "android": {
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false
     },
+    "androidStatusBar": {
+      "translucent": false
+    },    
     "web": {
       "bundler": "metro",
       "output": "static",
