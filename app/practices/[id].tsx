@@ -1,6 +1,7 @@
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { useData } from '../../src/contexts/DataContext';
+import { formatTime12Hour } from '../../src/utils/date';
 
 export default function PracticeView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,18 +28,14 @@ export default function PracticeView() {
     return { drill, minutes: pd.minutes, startTime };
   });
 
-  function formatTime(date: Date) {
-    return date.toTimeString().slice(0, 5);
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {team?.name} - {practice.date} {practice.startTime}
+        {team?.name} - {practice.date} {formatTime12Hour(start)}
       </Text>
       {schedule.map((s, idx) => (
         <Text key={idx} style={styles.row}>
-          {formatTime(s.startTime)} - {s.drill?.name} ({s.minutes}m)
+          {formatTime12Hour(s.startTime)} - {s.drill?.name} ({s.minutes}m)
         </Text>
       ))}
       <View style={styles.buttons}>

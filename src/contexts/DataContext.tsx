@@ -15,6 +15,7 @@ export type Drill = {
   id: number;
   name: string;
   defaultMinutes: number;
+  description: string;
 };
 
 export type PracticeDrill = {
@@ -42,8 +43,17 @@ type DataContextType = {
   updateTeam: (id: number, name: string) => void;
   removeTeam: (id: number) => void;
   drills: Drill[];
-  addDrill: (name: string, defaultMinutes: number) => void;
-  updateDrill: (id: number, name: string, defaultMinutes: number) => void;
+  addDrill: (
+    name: string,
+    defaultMinutes: number,
+    description: string,
+  ) => void;
+  updateDrill: (
+    id: number,
+    name: string,
+    defaultMinutes: number,
+    description: string,
+  ) => void;
   removeDrill: (id: number) => void;
   practices: Practice[];
   addPractice: (
@@ -137,7 +147,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const data = await readState(db);
         if (!cancelled && data) {
           setTeams(data.teams ?? []);
-          setDrills(data.drills ?? []);
+          setDrills(
+            (data.drills ?? []).map((drill) => ({
+              ...drill,
+              description: drill.description ?? '',
+            })),
+          );
           setPractices(data.practices ?? []);
           setTemplates(data.templates ?? []);
         }
@@ -164,12 +179,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const removeTeam = (id: number) =>
     setTeams((t) => t.filter((team) => team.id !== id));
 
-  const addDrill = (name: string, defaultMinutes: number) =>
-    setDrills((d) => [...d, { id: id(), name, defaultMinutes }]);
-  const updateDrill = (id: number, name: string, defaultMinutes: number) =>
+  const addDrill = (
+    name: string,
+    defaultMinutes: number,
+    description: string,
+  ) =>
+    setDrills((d) => [
+      ...d,
+      { id: id(), name, defaultMinutes, description },
+    ]);
+  const updateDrill = (
+    id: number,
+    name: string,
+    defaultMinutes: number,
+    description: string,
+  ) =>
     setDrills((d) =>
       d.map((drill) =>
-        drill.id === id ? { ...drill, name, defaultMinutes } : drill,
+        drill.id === id
+          ? { ...drill, name, defaultMinutes, description }
+          : drill,
       ),
     );
   const removeDrill = (id: number) =>

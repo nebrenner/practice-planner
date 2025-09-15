@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Button,
+  Alert,
   StyleSheet,
   FlatList,
   TouchableOpacity,
@@ -116,6 +117,14 @@ export default function PracticeForm({
 
   function remove(index: number) {
     setItems((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function showDrillDescription(drill?: Drill) {
+    if (!drill) return;
+    const message = drill.description?.trim()
+      ? drill.description
+      : 'No description provided.';
+    Alert.alert(drill.name, message);
   }
 
   function handleStartTimeChange(text: string) {
@@ -276,9 +285,14 @@ export default function PracticeForm({
               onPress={() => addDrill(item)}
               style={styles.suggestion}
             >
-              <Text>
+              <Text style={styles.suggestionTitle}>
                 {item.name} ({item.defaultMinutes}m)
               </Text>
+              {item.description ? (
+                <Text style={styles.suggestionDescription}>
+                  {item.description}
+                </Text>
+              ) : null}
             </TouchableOpacity>
           )}
         />
@@ -291,7 +305,15 @@ export default function PracticeForm({
           const drill = drills.find((d) => d.id === item.drillId);
           return (
             <View style={styles.drillRow}>
-              <Text style={styles.drillName}>{drill?.name}</Text>
+              <TouchableOpacity
+                style={styles.drillNameButton}
+                onPress={() => showDrillDescription(drill)}
+                disabled={!drill}
+              >
+                <Text style={styles.drillName}>
+                  {drill?.name ?? 'Unknown drill'}
+                </Text>
+              </TouchableOpacity>
               <TextInput
                 value={item.minutes}
                 onChangeText={(v) => updateMinutes(index, v)}
@@ -367,13 +389,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     marginBottom: 4,
   },
+  suggestionTitle: {
+    fontWeight: 'bold',
+  },
+  suggestionDescription: {
+    marginTop: 4,
+    color: '#555',
+  },
   drillRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
   },
+  drillNameButton: {
+    flex: 1,
+    marginRight: 8,
+  },
   drillName: {
     flex: 1,
+    flexShrink: 1,
   },
   minutesInput: {
     width: 60,

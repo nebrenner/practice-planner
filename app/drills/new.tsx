@@ -6,6 +6,7 @@ import { useData } from '../../src/contexts/DataContext';
 export default function NewDrill() {
   const [name, setName] = useState('');
   const [minutes, setMinutes] = useState('');
+  const [description, setDescription] = useState('');
   const { addDrill } = useData();
   const router = useRouter();
 
@@ -24,10 +25,18 @@ export default function NewDrill() {
         keyboardType="numeric"
         style={styles.input}
       />
+      <TextInput
+        placeholder="Description"
+        value={description}
+        onChangeText={setDescription}
+        style={[styles.input, styles.textArea]}
+        multiline
+        numberOfLines={4}
+      />
       <Button
         title="Save"
         onPress={() => {
-          addDrill(name, Number(minutes) || 0);
+          addDrill(name, Number(minutes) || 0, description.trim());
           router.back();
         }}
       />
@@ -46,5 +55,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 8,
     marginBottom: 12,
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
 });

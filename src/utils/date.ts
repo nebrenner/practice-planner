@@ -11,6 +11,17 @@ export function formatTime(date: Date): string {
   return `${hours}:${minutes}`;
 }
 
+export function formatTime12Hour(date: Date): string {
+  const rawHours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const period = rawHours >= 12 ? 'PM' : 'AM';
+  let hours = rawHours % 12;
+  if (hours === 0) {
+    hours = 12;
+  }
+  return `${hours}:${minutes} ${period}`;
+}
+
 export function parseDate(value: string): Date {
   const [year, month, day] = value.split('-').map(Number);
   return new Date(year, month - 1, day);
