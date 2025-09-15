@@ -21,8 +21,6 @@ jobs:
           touch dist/.nojekyll
           # Prefix asset URLs with the repo name for GitHub Pages
           find dist -name '*.html' -exec sed -i "s|\"/_expo|\"/${{ github.event.repository.name }}/_expo|g" {} +
-          # Strip the repo name from the runtime URL so Expo Router sees '/' instead of '/<repo>'
-          find dist -name '*.html' -exec sed -i "s|<head>|<head><script>var base='/${{ github.event.repository.name }}';if(location.pathname.startsWith(base)){history.replaceState(null,'',location.pathname.slice(base.length)+location.search+location.hash);}</script>|" {} +
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:
