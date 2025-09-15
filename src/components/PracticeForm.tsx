@@ -48,8 +48,12 @@ export default function PracticeForm({
   const [date, setDate] = useState<Date>(
     initialDate ? parseDate(initialDate) : new Date()
   );
-  const [startTime, setStartTime] = useState<Date>(
-    initialStartTime ? parseTime(initialStartTime) : new Date()
+  const initialStart = initialStartTime
+    ? parseTime(initialStartTime)
+    : new Date();
+  const [startTime, setStartTime] = useState<Date>(initialStart);
+  const [startTimeInput, setStartTimeInput] = useState<string>(
+    formatTime(initialStart)
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -114,6 +118,70 @@ export default function PracticeForm({
     setItems((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function handleStartTimeChange(text: string) {
+    const sanitized = text.replace(/[^\d:]/g, '');
+    const hasColon = sanitized.includes(':');
+    const endsWithColon = sanitized.endsWith(':');
+    let hoursPart = '';
+    let minutesPart = '';
+
+    if (hasColon) {
+      const firstColon = sanitized.indexOf(':');
+      hoursPart = sanitized.slice(0, firstColon);
+      minutesPart = sanitized.slice(firstColon + 1).replace(/:/g, '');
+    } else {
+      hoursPart = sanitized;
+      if (sanitized.length > 2) {
+        minutesPart = sanitized.slice(2);
+        hoursPart = sanitized.slice(0, 2);
+      }
+    }
+
+    hoursPart = hoursPart.slice(0, 2);
+    minutesPart = minutesPart.slice(0, 2);
+
+    let normalized = hoursPart;
+
+    if (
+      (hasColon || sanitized.length > 2) &&
+      (hoursPart.length > 0 || sanitized.startsWith(':') || endsWithColon)
+    ) {
+      normalized += ':';
+    }
+
+    normalized += minutesPart;
+
+    if (endsWithColon && minutesPart.length < 2 && !normalized.endsWith(':')) {
+      normalized += ':';
+    }
+
+    if (!hasColon && sanitized.length <= 2) {
+      normalized = hoursPart;
+    }
+
+    setStartTimeInput(normalized);
+
+    const match = /^(\d{1,2}):(\d{2})$/.exec(normalized);
+    if (!match) {
+      return;
+    }
+
+    const [hoursText, minutesText] = match.slice(1);
+    const hours = Number(hoursText);
+    const minutes = Number(minutesText);
+
+    if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+      setStartTime(parseTime(`${hoursText}:${minutesText}`));
+    }
+  }
+
+  function handleStartTimeBlur() {
+    const formatted = formatTime(startTime);
+    if (startTimeInput !== formatted) {
+      setStartTimeInput(formatted);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Team</Text>
@@ -162,9 +230,11 @@ export default function PracticeForm({
       {isWeb ? (
         <TextInput
           style={styles.input}
-          value={formatTime(startTime)}
+          value={startTimeInput}
           placeholder="HH:MM"
-          onChangeText={(text) => setStartTime(parseTime(text))}
+          onChangeText={handleStartTimeChange}
+          onBlur={handleStartTimeBlur}
+          maxLength={5}
         />
       ) : (
         <View style={styles.picker}>
@@ -179,7 +249,10 @@ export default function PracticeForm({
               display="default"
               onChange={(_, selected) => {
                 setShowTimePicker(false);
-                if (selected) setStartTime(selected);
+                if (selected) {
+                  setStartTime(selected);
+                  setStartTimeInput(formatTime(selected));
+                }
               }}
             />
           )}
