@@ -30,7 +30,7 @@ export default function TemplateView() {
             </Text>
             <View style={styles.descriptionButton}>
               <Button
-                title="View Description"
+                title="Details"
                 onPress={() => showDrillDescription(drill)}
                 disabled={!drill}
               />
