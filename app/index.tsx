@@ -16,6 +16,9 @@ export default function HomeScreen() {
         <Link href="/practices" style={styles.link}>
           Manage Practices
         </Link>
+        <Link href="/templates" style={styles.link}>
+          Manage Templates
+        </Link>
       </View>
     </View>
   );

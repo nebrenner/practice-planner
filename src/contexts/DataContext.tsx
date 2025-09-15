@@ -30,6 +30,12 @@ export type Practice = {
   drills: PracticeDrill[];
 };
 
+export type Template = {
+  id: number;
+  name: string;
+  drills: PracticeDrill[];
+};
+
 type DataContextType = {
   teams: Team[];
   addTeam: (name: string) => void;
@@ -54,6 +60,14 @@ type DataContextType = {
     drills: PracticeDrill[],
   ) => void;
   removePractice: (id: number) => void;
+  templates: Template[];
+  addTemplate: (name: string, drills: PracticeDrill[]) => void;
+  updateTemplate: (
+    id: number,
+    name: string,
+    drills: PracticeDrill[],
+  ) => void;
+  removeTemplate: (id: number) => void;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -79,7 +93,8 @@ function openDb(): Promise<IDBDatabase> {
 
 async function readState(db: IDBDatabase) {
   return new Promise<
-    { teams?: Team[]; drills?: Drill[]; practices?: Practice[] } | undefined
+    { teams?: Team[]; drills?: Drill[]; practices?: Practice[]; templates?: Template[] } |
+      undefined
   >((resolve) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
@@ -93,6 +108,7 @@ async function saveState(data: {
   teams: Team[];
   drills: Drill[];
   practices: Practice[];
+  templates: Template[];
 }) {
   const db = await openDb();
   return new Promise<void>(resolve => {
@@ -107,6 +123,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [drills, setDrills] = useState<Drill[]>([]);
   const [practices, setPractices] = useState<Practice[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
 
   // Load any saved data on first render
   useEffect(() => {
@@ -122,6 +139,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           setTeams(data.teams ?? []);
           setDrills(data.drills ?? []);
           setPractices(data.practices ?? []);
+          setTemplates(data.templates ?? []);
         }
       } catch {}
     }
@@ -136,8 +154,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof indexedDB === 'undefined') return;
 
-    saveState({ teams, drills, practices }).catch(() => {});
-  }, [teams, drills, practices]);
+    saveState({ teams, drills, practices, templates }).catch(() => {});
+  }, [teams, drills, practices, templates]);
 
   const addTeam = (name: string) =>
     setTeams((t) => [...t, { id: id(), name }]);
@@ -182,6 +200,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const removePractice = (id: number) =>
     setPractices((p) => p.filter((pr) => pr.id !== id));
 
+  const addTemplate = (name: string, drills: PracticeDrill[]) =>
+    setTemplates((t) => [...t, { id: id(), name, drills }]);
+  const updateTemplate = (
+    id: number,
+    name: string,
+    drills: PracticeDrill[],
+  ) =>
+    setTemplates((t) =>
+      t.map((tpl) => (tpl.id === id ? { ...tpl, name, drills } : tpl)),
+    );
+  const removeTemplate = (id: number) =>
+    setTemplates((t) => t.filter((tpl) => tpl.id !== id));
+
   return (
     <DataContext.Provider
       value={{
@@ -197,6 +228,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addPractice,
         updatePractice,
         removePractice,
+        templates,
+        addTemplate,
+        updateTemplate,
+        removeTemplate,
       }}
     >
       {children}
