@@ -11,9 +11,14 @@ export default function DrillsScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <Link href={`/drills/${item.id}`} style={styles.name}>
-              {item.name} ({item.defaultMinutes}m)
-            </Link>
+            <View style={styles.info}>
+              <Link href={`/drills/${item.id}`} style={styles.name}>
+                {item.name} ({item.defaultMinutes}m)
+              </Link>
+              {item.description ? (
+                <Text style={styles.description}>{item.description}</Text>
+              ) : null}
+            </View>
             <Button title="Delete" onPress={() => removeDrill(item.id)} />
           </View>
         )}
@@ -37,7 +42,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  info: {
+    flex: 1,
+    marginRight: 12,
+  },
   name: {
     fontSize: 18,
+  },
+  description: {
+    marginTop: 4,
+    color: '#555',
   },
 });

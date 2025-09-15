@@ -12,6 +12,7 @@ export default function EditDrill() {
   const [minutes, setMinutes] = useState(
     drill ? String(drill.defaultMinutes) : ''
   );
+  const [description, setDescription] = useState(drill?.description ?? '');
   const router = useRouter();
 
   if (!drill) {
@@ -31,10 +32,17 @@ export default function EditDrill() {
         keyboardType="numeric"
         style={styles.input}
       />
+      <TextInput
+        value={description}
+        onChangeText={setDescription}
+        multiline
+        numberOfLines={4}
+        style={[styles.input, styles.textArea]}
+      />
       <Button
         title="Save"
         onPress={() => {
-          updateDrill(drill.id, name, Number(minutes) || 0);
+          updateDrill(drill.id, name, Number(minutes) || 0, description.trim());
           router.back();
         }}
       />
@@ -62,6 +70,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     padding: 8,
     marginBottom: 12,
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   spacer: {
     height: 12,

@@ -20,7 +20,7 @@ Plan practices, track drills, and run sessions with precise, computed start/end 
 ### Data Model (initial)
 
 * **Category** `{ id, name }`
-* **Drill** `{ id, name, defaultMinutes, categoryIds[] }`
+* **Drill** `{ id, name, defaultMinutes, description }`
 * **Team** `{ id, name }`
 * **Practice** `{ id, teamId, startsAt }`
 * **PracticeDrill** `{ id, practiceId, drillId, minutes, order }`
