@@ -8,7 +8,9 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
+import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
 
 export type PracticeFormProps = {
   initialTeamId?: string;
@@ -32,8 +34,14 @@ export default function PracticeForm({
 }: PracticeFormProps) {
   const { teams, drills } = useData();
   const [teamId, setTeamId] = useState(initialTeamId ?? teams[0]?.id ?? '');
-  const [date, setDate] = useState(initialDate ?? '');
-  const [startTime, setStartTime] = useState(initialStartTime ?? '');
+  const [date, setDate] = useState<Date>(
+    initialDate ? parseDate(initialDate) : new Date()
+  );
+  const [startTime, setStartTime] = useState<Date>(
+    initialStartTime ? parseTime(initialStartTime) : new Date()
+  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [items, setItems] = useState<{ drillId: string; minutes: string }[]>(
     (initialDrills ?? []).map((d) => ({ drillId: d.drillId, minutes: String(d.minutes) }))
   );
@@ -110,18 +118,40 @@ export default function PracticeForm({
         ))}
       </View>
 
-      <TextInput
-        placeholder="Date (YYYY-MM-DD)"
-        value={date}
-        onChangeText={setDate}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Start Time (HH:MM)"
-        value={startTime}
-        onChangeText={setStartTime}
-        style={styles.input}
-      />
+      <View style={styles.picker}>
+        <Button
+          title={`Date: ${formatDate(date)}`}
+          onPress={() => setShowDatePicker(true)}
+        />
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={(_, selected) => {
+              setShowDatePicker(false);
+              if (selected) setDate(selected);
+            }}
+          />
+        )}
+      </View>
+      <View style={styles.picker}>
+        <Button
+          title={`Start Time: ${formatTime(startTime)}`}
+          onPress={() => setShowTimePicker(true)}
+        />
+        {showTimePicker && (
+          <DateTimePicker
+            value={startTime}
+            mode="time"
+            display="default"
+            onChange={(_, selected) => {
+              setShowTimePicker(false);
+              if (selected) setStartTime(selected);
+            }}
+          />
+        )}
+      </View>
 
       <Text style={styles.total}>Total Minutes: {totalMinutes}</Text>
 
@@ -175,10 +205,10 @@ export default function PracticeForm({
       <Button
         title="Save"
         onPress={() =>
-          onSave(
+            onSave(
             teamId,
-            date,
-            startTime,
+            formatDate(date),
+            formatTime(startTime),
             items.map((i) => ({
               drillId: i.drillId,
               minutes: Number(i.minutes) || 0,
@@ -217,6 +247,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
+    marginBottom: 12,
+  },
+  picker: {
     marginBottom: 12,
   },
   total: {
