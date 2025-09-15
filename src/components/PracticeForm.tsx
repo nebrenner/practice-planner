@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   Button,
-  Alert,
   StyleSheet,
   FlatList,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
 import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
+import { showDrillDescription } from '../utils/showDrillDescription';
 // DateTimePicker is not available on web, so require dynamically
 const DateTimePicker =
   Platform.OS === 'web'
@@ -117,14 +117,6 @@ export default function PracticeForm({
 
   function remove(index: number) {
     setItems((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function showDrillDescription(drill?: Drill) {
-    if (!drill) return;
-    const message = drill.description?.trim()
-      ? drill.description
-      : 'No description provided.';
-    Alert.alert(drill.name, message);
   }
 
   function handleStartTimeChange(text: string) {
