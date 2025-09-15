@@ -25,20 +25,33 @@ export default function EditDrill() {
 
   return (
     <View style={styles.container}>
-      <TextInput value={name} onChangeText={setName} style={styles.input} />
-      <TextInput
-        value={minutes}
-        onChangeText={setMinutes}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={4}
-        style={[styles.input, styles.textArea]}
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Drill Name</Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Minutes</Text>
+        <TextInput
+          value={minutes}
+          onChangeText={setMinutes}
+          keyboardType="numeric"
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+          style={[styles.input, styles.textArea]}
+        />
+      </View>
       <Button
         title="Save"
         onPress={() => {
@@ -65,11 +78,17 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
   },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
   },
   textArea: {
     minHeight: 80,

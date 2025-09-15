@@ -95,17 +95,22 @@ export default function TemplateForm({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Name</Text>
-      <TextInput value={name} onChangeText={setName} style={styles.input} />
+      <View style={styles.field}>
+        <Text style={styles.label}>Name</Text>
+        <TextInput value={name} onChangeText={setName} style={styles.input} />
+      </View>
 
       <Text style={styles.total}>Total Minutes: {totalMinutes}</Text>
 
-      <TextInput
-        placeholder="Add drill"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.input}
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Search Drills</Text>
+        <TextInput
+          placeholder="Add drill"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.input}
+        />
+      </View>
       {search.length > 0 && (
         <FlatList
           data={suggestions}
@@ -144,12 +149,15 @@ export default function TemplateForm({
                   {drill?.name ?? 'Unknown drill'}
                 </Text>
               </TouchableOpacity>
-              <TextInput
-                value={item.minutes}
-                onChangeText={(text) => updateMinutes(index, text)}
-                keyboardType="numeric"
-                style={styles.minutesInput}
-              />
+              <View style={styles.minutesContainer}>
+                <Text style={styles.minutesLabel}>Minutes</Text>
+                <TextInput
+                  value={item.minutes}
+                  onChangeText={(text) => updateMinutes(index, text)}
+                  keyboardType="numeric"
+                  style={styles.minutesInput}
+                />
+              </View>
               <View style={styles.buttons}>
                 <Button title="Up" onPress={() => moveUp(index)} />
                 <Button title="Down" onPress={() => moveDown(index)} />
@@ -178,6 +186,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  field: {
+    marginBottom: 16,
+  },
   label: {
     fontWeight: 'bold',
     marginBottom: 4,
@@ -186,7 +197,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   total: {
     fontWeight: 'bold',
@@ -222,7 +233,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 4,
+    marginRight: 0,
+  },
+  minutesContainer: {
+    width: 70,
     marginRight: 8,
+  },
+  minutesLabel: {
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   buttons: {
     flexDirection: 'row',

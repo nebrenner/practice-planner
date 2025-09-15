@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useData } from '../../src/contexts/DataContext';
 
@@ -10,12 +10,15 @@ export default function NewTeam() {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="Team name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Team Name</Text>
+        <TextInput
+          placeholder="Team name"
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+      </View>
       <Button
         title="Save"
         onPress={() => {
@@ -33,10 +36,16 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
   },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
   },
 });
