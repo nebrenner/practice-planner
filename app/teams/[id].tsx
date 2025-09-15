@@ -5,8 +5,9 @@ import { useData } from '../../src/contexts/DataContext';
 
 export default function EditTeam() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const teamId = Number(id);
   const { teams, updateTeam, removeTeam } = useData();
-  const team = teams.find(t => t.id === id);
+  const team = teams.find(t => t.id === teamId);
   const [name, setName] = useState(team?.name ?? '');
   const router = useRouter();
 

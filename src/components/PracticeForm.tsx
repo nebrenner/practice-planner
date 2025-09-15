@@ -21,12 +21,12 @@ const DateTimePicker =
       );
 
 export type PracticeFormProps = {
-  initialTeamId?: string;
+  initialTeamId?: number;
   initialDate?: string;
   initialStartTime?: string;
   initialDrills?: PracticeDrill[];
   onSave: (
-    teamId: string,
+    teamId: number,
     date: string,
     startTime: string,
     drills: PracticeDrill[],
@@ -42,7 +42,9 @@ export default function PracticeForm({
 }: PracticeFormProps) {
   const { teams, drills } = useData();
   const isWeb = Platform.OS === 'web';
-  const [teamId, setTeamId] = useState(initialTeamId ?? teams[0]?.id ?? '');
+  const [teamId, setTeamId] = useState<number>(
+    initialTeamId ?? teams[0]?.id ?? 0,
+  );
   const [date, setDate] = useState<Date>(
     initialDate ? parseDate(initialDate) : new Date()
   );
@@ -51,8 +53,11 @@ export default function PracticeForm({
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [items, setItems] = useState<{ drillId: string; minutes: string }[]>(
-    (initialDrills ?? []).map((d) => ({ drillId: d.drillId, minutes: String(d.minutes) }))
+  const [items, setItems] = useState<{ drillId: number; minutes: string }[]>(
+    (initialDrills ?? []).map((d) => ({
+      drillId: d.drillId,
+      minutes: String(d.minutes),
+    })),
   );
   const [search, setSearch] = useState('');
 
@@ -192,7 +197,7 @@ export default function PracticeForm({
       {search.length > 0 && (
         <FlatList
           data={suggestions}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => addDrill(item)}

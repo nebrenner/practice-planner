@@ -13,7 +13,7 @@ export default function PracticesScreen() {
     <View style={styles.container}>
       <FlatList
         data={sorted}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const team = teams.find((t) => t.id === item.teamId);
           return (
