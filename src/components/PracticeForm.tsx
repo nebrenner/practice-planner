@@ -7,10 +7,19 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
 import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
+// DateTimePicker is not available on web, so require dynamically
+const DateTimePicker =
+  Platform.OS === 'web'
+    ? null
+    : (
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('@react-native-community/datetimepicker').default as any
+      );
 
 export type PracticeFormProps = {
   initialTeamId?: string;
@@ -33,6 +42,7 @@ export default function PracticeForm({
   onSave,
 }: PracticeFormProps) {
   const { teams, drills } = useData();
+  const isWeb = Platform.OS === 'web';
   const [teamId, setTeamId] = useState(initialTeamId ?? teams[0]?.id ?? '');
   const [date, setDate] = useState<Date>(
     initialDate ? parseDate(initialDate) : new Date()
@@ -117,42 +127,61 @@ export default function PracticeForm({
           </TouchableOpacity>
         ))}
       </View>
-
-      <View style={styles.picker}>
-        <Button
-          title={`Date: ${formatDate(date)}`}
-          onPress={() => setShowDatePicker(true)}
+      
+      {isWeb ? (
+        <TextInput
+          style={styles.input}
+          value={formatDate(date)}
+          placeholder="YYYY-MM-DD"
+          onChangeText={(text) => setDate(parseDate(text))}
         />
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={(_, selected) => {
-              setShowDatePicker(false);
-              if (selected) setDate(selected);
-            }}
+      ) : (
+        <View style={styles.picker}>
+          <Button
+            title={`Date: ${formatDate(date)}`}
+            onPress={() => setShowDatePicker(true)}
           />
-        )}
-      </View>
-      <View style={styles.picker}>
-        <Button
-          title={`Start Time: ${formatTime(startTime)}`}
-          onPress={() => setShowTimePicker(true)}
-        />
-        {showTimePicker && (
-          <DateTimePicker
-            value={startTime}
-            mode="time"
-            display="default"
-            onChange={(_, selected) => {
-              setShowTimePicker(false);
-              if (selected) setStartTime(selected);
-            }}
-          />
-        )}
-      </View>
+          {showDatePicker && DateTimePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(_, selected) => {
+                setShowDatePicker(false);
+                if (selected) setDate(selected);
+              }}
+            />
+          )}
+        </View>
+      )}
 
+      {isWeb ? (
+        <TextInput
+          style={styles.input}
+          value={formatTime(startTime)}
+          placeholder="HH:MM"
+          onChangeText={(text) => setStartTime(parseTime(text))}
+        />
+      ) : (
+        <View style={styles.picker}>
+          <Button
+            title={`Start Time: ${formatTime(startTime)}`}
+            onPress={() => setShowTimePicker(true)}
+          />
+          {showTimePicker && DateTimePicker && (
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              display="default"
+              onChange={(_, selected) => {
+                setShowTimePicker(false);
+                if (selected) setStartTime(selected);
+              }}
+            />
+          )}
+        </View>
+      )}
+      
       <Text style={styles.total}>Total Minutes: {totalMinutes}</Text>
 
       <TextInput
