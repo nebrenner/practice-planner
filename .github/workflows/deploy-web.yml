@@ -19,6 +19,8 @@ jobs:
           cp dist/index.html dist/404.html
           # Allow files in directories prefixed with '_' (like _expo/) to be served
           touch dist/.nojekyll
+          # Prefix asset URLs with the repo name for GitHub Pages
+          find dist -name '*.html' -exec sed -i "s|\"/_expo|\"/${{ github.event.repository.name }}/_expo|g" {} +
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
   deploy:
