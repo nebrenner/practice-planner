@@ -7,8 +7,18 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
+import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
+// DateTimePicker is not available on web, so require dynamically
+const DateTimePicker =
+  Platform.OS === 'web'
+    ? null
+    : (
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('@react-native-community/datetimepicker').default as any
+      );
 
 export type PracticeFormProps = {
   initialTeamId?: string;
@@ -31,9 +41,16 @@ export default function PracticeForm({
   onSave,
 }: PracticeFormProps) {
   const { teams, drills } = useData();
+  const isWeb = Platform.OS === 'web';
   const [teamId, setTeamId] = useState(initialTeamId ?? teams[0]?.id ?? '');
-  const [date, setDate] = useState(initialDate ?? '');
-  const [startTime, setStartTime] = useState(initialStartTime ?? '');
+  const [date, setDate] = useState<Date>(
+    initialDate ? parseDate(initialDate) : new Date()
+  );
+  const [startTime, setStartTime] = useState<Date>(
+    initialStartTime ? parseTime(initialStartTime) : new Date()
+  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [items, setItems] = useState<{ drillId: string; minutes: string }[]>(
     (initialDrills ?? []).map((d) => ({ drillId: d.drillId, minutes: String(d.minutes) }))
   );
@@ -110,18 +127,59 @@ export default function PracticeForm({
         ))}
       </View>
 
-      <TextInput
-        placeholder="Date (YYYY-MM-DD)"
-        value={date}
-        onChangeText={setDate}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Start Time (HH:MM)"
-        value={startTime}
-        onChangeText={setStartTime}
-        style={styles.input}
-      />
+      {isWeb ? (
+        <TextInput
+          style={styles.input}
+          value={formatDate(date)}
+          placeholder="YYYY-MM-DD"
+          onChangeText={(text) => setDate(parseDate(text))}
+        />
+      ) : (
+        <View style={styles.picker}>
+          <Button
+            title={`Date: ${formatDate(date)}`}
+            onPress={() => setShowDatePicker(true)}
+          />
+          {showDatePicker && DateTimePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(_, selected) => {
+                setShowDatePicker(false);
+                if (selected) setDate(selected);
+              }}
+            />
+          )}
+        </View>
+      )}
+
+      {isWeb ? (
+        <TextInput
+          style={styles.input}
+          value={formatTime(startTime)}
+          placeholder="HH:MM"
+          onChangeText={(text) => setStartTime(parseTime(text))}
+        />
+      ) : (
+        <View style={styles.picker}>
+          <Button
+            title={`Start Time: ${formatTime(startTime)}`}
+            onPress={() => setShowTimePicker(true)}
+          />
+          {showTimePicker && DateTimePicker && (
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              display="default"
+              onChange={(_, selected) => {
+                setShowTimePicker(false);
+                if (selected) setStartTime(selected);
+              }}
+            />
+          )}
+        </View>
+      )}
 
       <Text style={styles.total}>Total Minutes: {totalMinutes}</Text>
 
@@ -175,10 +233,10 @@ export default function PracticeForm({
       <Button
         title="Save"
         onPress={() =>
-          onSave(
+            onSave(
             teamId,
-            date,
-            startTime,
+            formatDate(date),
+            formatTime(startTime),
             items.map((i) => ({
               drillId: i.drillId,
               minutes: Number(i.minutes) || 0,
@@ -217,6 +275,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
+    marginBottom: 12,
+  },
+  picker: {
     marginBottom: 12,
   },
   total: {
