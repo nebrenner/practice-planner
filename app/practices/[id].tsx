@@ -2,6 +2,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { useData } from '../../src/contexts/DataContext';
 import { formatTime12Hour } from '../../src/utils/date';
+import { showDrillDescription } from '../../src/utils/showDrillDescription';
 
 export default function PracticeView() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,9 +35,20 @@ export default function PracticeView() {
         {team?.name} - {practice.date} {formatTime12Hour(start)}
       </Text>
       {schedule.map((s, idx) => (
-        <Text key={idx} style={styles.row}>
-          {formatTime12Hour(s.startTime)} - {s.drill?.name} ({s.minutes}m)
-        </Text>
+        <View key={idx} style={styles.row}>
+          <Text style={styles.rowText}>
+            {formatTime12Hour(s.startTime)} -
+            {' '}
+            {s.drill?.name ?? 'Unknown drill'} ({s.minutes}m)
+          </Text>
+          <View style={styles.descriptionButton}>
+            <Button
+              title="View Description"
+              onPress={() => showDrillDescription(s.drill)}
+              disabled={!s.drill}
+            />
+          </View>
+        </View>
       ))}
       <View style={styles.buttons}>
         <Link href={`/practices/${practice.id}/edit`} asChild>
@@ -70,6 +82,15 @@ const styles = StyleSheet.create({
   },
   row: {
     marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowText: {
+    flex: 1,
+    marginRight: 12,
+  },
+  descriptionButton: {
+    marginLeft: 4,
   },
   buttons: {
     marginTop: 16,
