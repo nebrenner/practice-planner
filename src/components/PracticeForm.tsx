@@ -40,7 +40,7 @@ export default function PracticeForm({
   initialDrills,
   onSave,
 }: PracticeFormProps) {
-  const { teams, drills } = useData();
+  const { teams, drills, templates } = useData();
   const isWeb = Platform.OS === 'web';
   const [teamId, setTeamId] = useState(initialTeamId ?? teams[0]?.id ?? '');
   const [date, setDate] = useState<Date>(
@@ -111,6 +111,25 @@ export default function PracticeForm({
 
   return (
     <View style={styles.container}>
+      <Text style={styles.label}>Templates</Text>
+      <View style={styles.templateList}>
+        {templates.map(t => (
+          <TouchableOpacity
+            key={t.id}
+            onPress={() =>
+              setItems(
+                t.drills.map(d => ({
+                  drillId: d.drillId,
+                  minutes: String(d.minutes),
+                }))
+              )
+            }
+            style={styles.templateOption}
+          >
+            <Text>{t.name}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       <Text style={styles.label}>Team</Text>
       <View style={styles.teamList}>
         {teams.map((t) => (
@@ -270,6 +289,18 @@ const styles = StyleSheet.create({
   },
   teamOptionSelected: {
     backgroundColor: '#def',
+  },
+  templateList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 12,
+  },
+  templateOption: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginRight: 8,
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
