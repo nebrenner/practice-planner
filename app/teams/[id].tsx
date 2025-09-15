@@ -21,7 +21,10 @@ export default function EditTeam() {
 
   return (
     <View style={styles.container}>
-      <TextInput value={name} onChangeText={setName} style={styles.input} />
+      <View style={styles.field}>
+        <Text style={styles.label}>Team Name</Text>
+        <TextInput value={name} onChangeText={setName} style={styles.input} />
+      </View>
       <Button
         title="Save"
         onPress={() => {
@@ -48,11 +51,17 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
   },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
   },
   spacer: {
     height: 12,

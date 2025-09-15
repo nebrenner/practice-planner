@@ -193,89 +193,100 @@ export default function PracticeForm({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Team</Text>
-      <View style={styles.teamList}>
-        {teams.map((t) => (
-          <TouchableOpacity
-            key={t.id}
-            onPress={() => setTeamId(t.id)}
-            style={[
-              styles.teamOption,
-              teamId === t.id && styles.teamOptionSelected,
-            ]}
-          >
-            <Text>{t.name}</Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.field}>
+        <Text style={styles.label}>Team</Text>
+        <View style={styles.teamList}>
+          {teams.map((t) => (
+            <TouchableOpacity
+              key={t.id}
+              onPress={() => setTeamId(t.id)}
+              style={[
+                styles.teamOption,
+                teamId === t.id && styles.teamOptionSelected,
+              ]}
+            >
+              <Text>{t.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-      
-      {isWeb ? (
-        <TextInput
-          style={styles.input}
-          value={formatDate(date)}
-          placeholder="YYYY-MM-DD"
-          onChangeText={(text) => setDate(parseDate(text))}
-        />
-      ) : (
-        <View style={styles.picker}>
-          <Button
-            title={`Date: ${formatDate(date)}`}
-            onPress={() => setShowDatePicker(true)}
-          />
-          {showDatePicker && DateTimePicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="default"
-              onChange={(_, selected) => {
-                setShowDatePicker(false);
-                if (selected) setDate(selected);
-              }}
-            />
-          )}
-        </View>
-      )}
 
-      {isWeb ? (
-        <TextInput
-          style={styles.input}
-          value={startTimeInput}
-          placeholder="HH:MM"
-          onChangeText={handleStartTimeChange}
-          onBlur={handleStartTimeBlur}
-          maxLength={5}
-        />
-      ) : (
-        <View style={styles.picker}>
-          <Button
-            title={`Start Time: ${formatTime(startTime)}`}
-            onPress={() => setShowTimePicker(true)}
+      <View style={styles.field}>
+        <Text style={styles.label}>Practice Date</Text>
+        {isWeb ? (
+          <TextInput
+            style={styles.input}
+            value={formatDate(date)}
+            placeholder="YYYY-MM-DD"
+            onChangeText={(text) => setDate(parseDate(text))}
           />
-          {showTimePicker && DateTimePicker && (
-            <DateTimePicker
-              value={startTime}
-              mode="time"
-              display="default"
-              onChange={(_, selected) => {
-                setShowTimePicker(false);
-                if (selected) {
-                  setStartTime(selected);
-                  setStartTimeInput(formatTime(selected));
-                }
-              }}
+        ) : (
+          <View style={styles.picker}>
+            <Button
+              title={`Date: ${formatDate(date)}`}
+              onPress={() => setShowDatePicker(true)}
             />
-          )}
-        </View>
-      )}
-      
+            {showDatePicker && DateTimePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={(_, selected) => {
+                  setShowDatePicker(false);
+                  if (selected) setDate(selected);
+                }}
+              />
+            )}
+          </View>
+        )}
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>Start Time</Text>
+        {isWeb ? (
+          <TextInput
+            style={styles.input}
+            value={startTimeInput}
+            placeholder="HH:MM"
+            onChangeText={handleStartTimeChange}
+            onBlur={handleStartTimeBlur}
+            maxLength={5}
+          />
+        ) : (
+          <View style={styles.picker}>
+            <Button
+              title={`Start Time: ${formatTime(startTime)}`}
+              onPress={() => setShowTimePicker(true)}
+            />
+            {showTimePicker && DateTimePicker && (
+              <DateTimePicker
+                value={startTime}
+                mode="time"
+                display="default"
+                onChange={(_, selected) => {
+                  setShowTimePicker(false);
+                  if (selected) {
+                    setStartTime(selected);
+                    setStartTimeInput(formatTime(selected));
+                  }
+                }}
+              />
+            )}
+          </View>
+        )}
+      </View>
+
       <Text style={styles.total}>Total Minutes: {totalMinutes}</Text>
 
-      <TextInput
-        placeholder="Add drill"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.input}
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Search Drills</Text>
+        <TextInput
+          placeholder="Add drill"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.input}
+        />
+      </View>
       {search.length > 0 && (
         <FlatList
           data={suggestions}
@@ -314,12 +325,15 @@ export default function PracticeForm({
                   {drill?.name ?? 'Unknown drill'}
                 </Text>
               </TouchableOpacity>
-              <TextInput
-                value={item.minutes}
-                onChangeText={(v) => updateMinutes(index, v)}
-                keyboardType="numeric"
-                style={styles.minutesInput}
-              />
+              <View style={styles.minutesContainer}>
+                <Text style={styles.minutesLabel}>Minutes</Text>
+                <TextInput
+                  value={item.minutes}
+                  onChangeText={(v) => updateMinutes(index, v)}
+                  keyboardType="numeric"
+                  style={styles.minutesInput}
+                />
+              </View>
               <View style={styles.rowButtons}>
                 <Button title="↑" onPress={() => moveUp(index)} />
                 <Button title="↓" onPress={() => moveDown(index)} />
@@ -353,13 +367,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  field: {
+    marginBottom: 16,
+  },
   label: {
     fontWeight: 'bold',
+    marginBottom: 4,
   },
   teamList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginVertical: 8,
+    marginTop: 8,
   },
   teamOption: {
     padding: 8,
@@ -375,10 +393,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   picker: {
-    marginBottom: 12,
+    marginTop: 4,
   },
   total: {
     fontWeight: 'bold',
@@ -414,7 +432,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 4,
+    marginRight: 0,
+  },
+  minutesContainer: {
+    width: 70,
     marginRight: 8,
+  },
+  minutesLabel: {
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   rowButtons: {
     flexDirection: 'row',

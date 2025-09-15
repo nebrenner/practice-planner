@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useData } from '../../src/contexts/DataContext';
 
@@ -12,27 +12,36 @@ export default function NewDrill() {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="Drill name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Minutes"
-        value={minutes}
-        onChangeText={setMinutes}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
-        style={[styles.input, styles.textArea]}
-        multiline
-        numberOfLines={4}
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Drill Name</Text>
+        <TextInput
+          placeholder="Drill name"
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Minutes</Text>
+        <TextInput
+          placeholder="Minutes"
+          value={minutes}
+          onChangeText={setMinutes}
+          keyboardType="numeric"
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          placeholder="Description"
+          value={description}
+          onChangeText={setDescription}
+          style={[styles.input, styles.textArea]}
+          multiline
+          numberOfLines={4}
+        />
+      </View>
       <Button
         title="Save"
         onPress={() => {
@@ -50,11 +59,17 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
   },
+  field: {
+    marginBottom: 16,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 8,
-    marginBottom: 12,
   },
   textArea: {
     minHeight: 80,
