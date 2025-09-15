@@ -1,8 +1,10 @@
 import { Link, usePathname } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Header() {
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
   let listLink = null;
   if (pathname.startsWith('/teams') && pathname !== '/teams') {
     listLink = (
@@ -25,7 +27,7 @@ export default function Header() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, height: 60 + insets.top }]}>
       <Link href="/" style={styles.link}>
         Home
       </Link>
@@ -36,11 +38,11 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   container: {
-    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    height: 60,
   },
   link: {
     fontSize: 18,
