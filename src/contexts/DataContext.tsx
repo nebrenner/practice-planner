@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react';
 
 export type Team = {
   id: string;
@@ -31,6 +37,31 @@ function id() {
 export function DataProvider({ children }: { children: ReactNode }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [drills, setDrills] = useState<Drill[]>([]);
+
+  // Load any saved data on first render
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const raw = localStorage.getItem('practice-planner:data');
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          teams?: Team[];
+          drills?: Drill[];
+        };
+        setTeams(parsed.teams ?? []);
+        setDrills(parsed.drills ?? []);
+      }
+    } catch {}
+  }, []);
+
+  // Persist whenever data changes
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(
+      'practice-planner:data',
+      JSON.stringify({ teams, drills })
+    );
+  }, [teams, drills]);
 
   const addTeam = (name: string) => setTeams(t => [...t, { id: id(), name }]);
   const updateTeam = (id: string, name: string) =>
