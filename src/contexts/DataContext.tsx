@@ -37,6 +37,13 @@ export type Template = {
   drills: PracticeDrill[];
 };
 
+type DataSnapshot = {
+  teams: Team[];
+  drills: Drill[];
+  practices: Practice[];
+  templates: Template[];
+};
+
 type DataContextType = {
   teams: Team[];
   addTeam: (name: string) => void;
@@ -78,6 +85,8 @@ type DataContextType = {
     drills: PracticeDrill[],
   ) => void;
   removeTemplate: (id: number) => void;
+  exportAllData: () => DataSnapshot;
+  importAllData: (data: unknown) => void;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -89,6 +98,98 @@ function id() {
 const DB_NAME = 'practice-planner';
 const STORE_NAME = 'data';
 const KEY = 'state';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const num = Number(value);
+    if (Number.isFinite(num)) {
+      return num;
+    }
+  }
+  return null;
+}
+
+function toStringOrNull(value: unknown): string | null {
+  return typeof value === 'string' ? value : null;
+}
+
+function sanitizeList<T>(value: unknown, clone: (item: unknown) => T | null) {
+  if (!Array.isArray(value)) return [] as T[];
+  const result: T[] = [];
+  for (const item of value) {
+    const next = clone(item);
+    if (next) {
+      result.push(next);
+    }
+  }
+  return result;
+}
+
+function clonePracticeDrill(value: unknown): PracticeDrill | null {
+  if (!isRecord(value)) return null;
+  const drillId = toNumber(value.drillId);
+  const minutes = toNumber(value.minutes);
+  if (drillId == null || minutes == null) return null;
+  return { drillId, minutes };
+}
+
+function cloneTeam(value: unknown): Team | null {
+  if (!isRecord(value)) return null;
+  const id = toNumber(value.id);
+  const name = toStringOrNull(value.name);
+  if (id == null || !name) return null;
+  return { id, name };
+}
+
+function cloneDrill(value: unknown): Drill | null {
+  if (!isRecord(value)) return null;
+  const id = toNumber(value.id);
+  const name = toStringOrNull(value.name);
+  const defaultMinutes = toNumber(value.defaultMinutes);
+  if (id == null || !name || defaultMinutes == null) return null;
+  const description = typeof value.description === 'string' ? value.description : '';
+  return { id, name, defaultMinutes, description };
+}
+
+function clonePractice(value: unknown): Practice | null {
+  if (!isRecord(value)) return null;
+  const id = toNumber(value.id);
+  const teamId = toNumber(value.teamId);
+  const date = toStringOrNull(value.date);
+  const startTime = toStringOrNull(value.startTime);
+  if (id == null || teamId == null || !date || !startTime) return null;
+  const drills = sanitizeList(value.drills, clonePracticeDrill);
+  return { id, teamId, date, startTime, drills };
+}
+
+function cloneTemplate(value: unknown): Template | null {
+  if (!isRecord(value)) return null;
+  const id = toNumber(value.id);
+  const name = toStringOrNull(value.name);
+  if (id == null || !name) return null;
+  const drills = sanitizeList(value.drills, clonePracticeDrill);
+  return { id, name, drills };
+}
+
+function sanitizeData(input: unknown): DataSnapshot {
+  if (!isRecord(input)) {
+    return { teams: [], drills: [], practices: [], templates: [] };
+  }
+
+  return {
+    teams: sanitizeList(input.teams, cloneTeam),
+    drills: sanitizeList(input.drills, cloneDrill),
+    practices: sanitizeList(input.practices, clonePractice),
+    templates: sanitizeList(input.templates, cloneTemplate),
+  };
+}
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -146,15 +247,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const db = await openDb();
         const data = await readState(db);
         if (!cancelled && data) {
-          setTeams(data.teams ?? []);
-          setDrills(
-            (data.drills ?? []).map((drill) => ({
-              ...drill,
-              description: drill.description ?? '',
-            })),
-          );
-          setPractices(data.practices ?? []);
-          setTemplates(data.templates ?? []);
+          const normalized = sanitizeData(data);
+          setTeams(normalized.teams);
+          setDrills(normalized.drills);
+          setPractices(normalized.practices);
+          setTemplates(normalized.templates);
         }
       } catch {}
     }
@@ -242,6 +339,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const removeTemplate = (id: number) =>
     setTemplates((t) => t.filter((tpl) => tpl.id !== id));
 
+  const exportAllData = () => ({
+    teams: teams.map((team) => ({ ...team })),
+    drills: drills.map((drill) => ({ ...drill })),
+    practices: practices.map((practice) => ({
+      ...practice,
+      drills: practice.drills.map((d) => ({ ...d })),
+    })),
+    templates: templates.map((template) => ({
+      ...template,
+      drills: template.drills.map((d) => ({ ...d })),
+    })),
+  });
+  const importAllData = (data: unknown) => {
+    const normalized = sanitizeData(data);
+    setTeams(normalized.teams);
+    setDrills(normalized.drills);
+    setPractices(normalized.practices);
+    setTemplates(normalized.templates);
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -261,6 +378,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addTemplate,
         updateTemplate,
         removeTemplate,
+        exportAllData,
+        importAllData,
       }}
     >
       {children}
