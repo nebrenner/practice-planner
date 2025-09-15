@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
 import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
@@ -183,8 +184,8 @@ export default function PracticeForm({
     }
   }
 
-  return (
-    <View style={styles.container}>
+  const headerComponent = (
+    <View>
       <View style={styles.field}>
         <Text style={styles.label}>Team</Text>
         <View style={styles.teamList}>
@@ -280,11 +281,10 @@ export default function PracticeForm({
         />
       </View>
       {search.length > 0 && (
-        <FlatList
-          data={suggestions}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
+        <View style={styles.suggestionsWrapper}>
+          {suggestions.map((item) => (
             <TouchableOpacity
+              key={item.id}
               onPress={() => addDrill(item)}
               style={styles.suggestion}
             >
@@ -297,10 +297,40 @@ export default function PracticeForm({
                 </Text>
               ) : null}
             </TouchableOpacity>
-          )}
-        />
+          ))}
+        </View>
       )}
+    </View>
+  );
 
+  const footerComponent = (
+    <View style={styles.footer}>
+      <Button
+        title="Save"
+        onPress={() =>
+          onSave(
+            teamId,
+            formatDate(date),
+            formatTime(startTime),
+            items.map((i) => ({
+              drillId: i.drillId,
+              minutes: Number(i.minutes) || 0,
+            })),
+          )
+        }
+      />
+    </View>
+  );
+
+  const keyboardBehavior =
+    Platform.OS === 'ios'
+      ? 'padding'
+      : Platform.OS === 'android'
+        ? 'height'
+        : undefined;
+
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={keyboardBehavior}>
       <FlatList
         data={items}
         keyExtractor={(_, i) => String(i)}
@@ -334,30 +364,23 @@ export default function PracticeForm({
             </View>
           );
         }}
+        ListHeaderComponent={headerComponent}
+        ListFooterComponent={footerComponent}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
       />
-
-      <Button
-        title="Save"
-        onPress={() =>
-            onSave(
-            teamId,
-            formatDate(date),
-            formatTime(startTime),
-            items.map((i) => ({
-              drillId: i.drillId,
-              minutes: Number(i.minutes) || 0,
-            }))
-          )
-        }
-      />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  listContent: {
     padding: 16,
+    paddingBottom: 64,
   },
   field: {
     marginBottom: 16,
@@ -399,6 +422,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     marginBottom: 4,
   },
+  suggestionsWrapper: {
+    marginBottom: 16,
+  },
   suggestionTitle: {
     fontWeight: 'bold',
   },
@@ -436,5 +462,8 @@ const styles = StyleSheet.create({
   },
   rowButtons: {
     flexDirection: 'row',
+  },
+  footer: {
+    marginTop: 16,
   },
 });
