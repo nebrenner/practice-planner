@@ -18,14 +18,20 @@
       "bundler": "metro",
       "output": "static",
       "backgroundColor": "#ffffff",
-      "themeColor": "#ffffff"
+      "themeColor": "#ffffff",
+      "startUrl": "/practice-planner/",
+      "scope": "/practice-planner/",
+      "display": "standalone",
+      "name": "Practice Planner",
+      "shortName": "PracticePlanner"
     },
     "plugins": [
       "expo-router"
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/practice-planner"
     }
   }
 }
