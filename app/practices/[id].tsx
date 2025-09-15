@@ -45,6 +45,9 @@ export default function PracticeView() {
         <Link href={`/practices/${practice.id}/edit`} asChild>
           <Button title="Edit" />
         </Link>
+        <Link href={`/templates/new?practiceId=${practice.id}`} asChild>
+          <Button title="Save as Template" />
+        </Link>
         <Button
           title="Delete"
           color="red"
