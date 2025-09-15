@@ -4,8 +4,9 @@ import { useData } from '../../src/contexts/DataContext';
 
 export default function PracticeView() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const practiceId = Number(id);
   const { practices, teams, drills, removePractice } = useData();
-  const practice = practices.find((p) => p.id === id);
+  const practice = practices.find((p) => p.id === practiceId);
   const router = useRouter();
 
   if (!practice) {

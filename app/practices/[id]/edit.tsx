@@ -5,8 +5,9 @@ import { useData } from '../../../src/contexts/DataContext';
 
 export default function EditPractice() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const practiceId = Number(id);
   const { practices, updatePractice } = useData();
-  const practice = practices.find((p) => p.id === id);
+  const practice = practices.find((p) => p.id === practiceId);
   const router = useRouter();
 
   if (!practice) {

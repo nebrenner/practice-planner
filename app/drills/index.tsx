@@ -8,7 +8,7 @@ export default function DrillsScreen() {
     <View style={styles.container}>
       <FlatList
         data={drills}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Link href={`/drills/${item.id}`} style={styles.name}>

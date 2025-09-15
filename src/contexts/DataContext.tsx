@@ -7,24 +7,24 @@ import React, {
 } from 'react';
 
 export type Team = {
-  id: string;
+  id: number;
   name: string;
 };
 
 export type Drill = {
-  id: string;
+  id: number;
   name: string;
   defaultMinutes: number;
 };
 
 export type PracticeDrill = {
-  drillId: string;
+  drillId: number;
   minutes: number;
 };
 
 export type Practice = {
-  id: string;
-  teamId: string;
+  id: number;
+  teamId: number;
   date: string; // YYYY-MM-DD
   startTime: string; // HH:MM
   drills: PracticeDrill[];
@@ -33,33 +33,33 @@ export type Practice = {
 type DataContextType = {
   teams: Team[];
   addTeam: (name: string) => void;
-  updateTeam: (id: string, name: string) => void;
-  removeTeam: (id: string) => void;
+  updateTeam: (id: number, name: string) => void;
+  removeTeam: (id: number) => void;
   drills: Drill[];
   addDrill: (name: string, defaultMinutes: number) => void;
-  updateDrill: (id: string, name: string, defaultMinutes: number) => void;
-  removeDrill: (id: string) => void;
+  updateDrill: (id: number, name: string, defaultMinutes: number) => void;
+  removeDrill: (id: number) => void;
   practices: Practice[];
   addPractice: (
-    teamId: string,
+    teamId: number,
     date: string,
     startTime: string,
-    drills: PracticeDrill[]
+    drills: PracticeDrill[],
   ) => void;
   updatePractice: (
-    id: string,
-    teamId: string,
+    id: number,
+    teamId: number,
     date: string,
     startTime: string,
-    drills: PracticeDrill[]
+    drills: PracticeDrill[],
   ) => void;
-  removePractice: (id: string) => void;
+  removePractice: (id: number) => void;
 };
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 function id() {
-  return Date.now().toString();
+  return Date.now();
 }
 
 const DB_NAME = 'practice-planner';
@@ -80,7 +80,7 @@ function openDb(): Promise<IDBDatabase> {
 async function readState(db: IDBDatabase) {
   return new Promise<
     { teams?: Team[]; drills?: Drill[]; practices?: Practice[] } | undefined
-  >(resolve => {
+  >((resolve) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
     const req = store.get(KEY);
@@ -139,44 +139,48 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveState({ teams, drills, practices }).catch(() => {});
   }, [teams, drills, practices]);
 
-  const addTeam = (name: string) => setTeams(t => [...t, { id: id(), name }]);
-  const updateTeam = (id: string, name: string) =>
-    setTeams(t => t.map(team => (team.id === id ? { ...team, name } : team)));
-  const removeTeam = (id: string) =>
-    setTeams(t => t.filter(team => team.id !== id));
+  const addTeam = (name: string) =>
+    setTeams((t) => [...t, { id: id(), name }]);
+  const updateTeam = (id: number, name: string) =>
+    setTeams((t) => t.map((team) => (team.id === id ? { ...team, name } : team)));
+  const removeTeam = (id: number) =>
+    setTeams((t) => t.filter((team) => team.id !== id));
 
   const addDrill = (name: string, defaultMinutes: number) =>
-    setDrills(d => [...d, { id: id(), name, defaultMinutes }]);
-  const updateDrill = (id: string, name: string, defaultMinutes: number) =>
-    setDrills(d =>
-      d.map(drill =>
-        drill.id === id ? { ...drill, name, defaultMinutes } : drill
-      )
+    setDrills((d) => [...d, { id: id(), name, defaultMinutes }]);
+  const updateDrill = (id: number, name: string, defaultMinutes: number) =>
+    setDrills((d) =>
+      d.map((drill) =>
+        drill.id === id ? { ...drill, name, defaultMinutes } : drill,
+      ),
     );
-  const removeDrill = (id: string) =>
-    setDrills(d => d.filter(drill => drill.id !== id));
+  const removeDrill = (id: number) =>
+    setDrills((d) => d.filter((drill) => drill.id !== id));
 
   const addPractice = (
-    teamId: string,
+    teamId: number,
     date: string,
     startTime: string,
-    drills: PracticeDrill[]
+    drills: PracticeDrill[],
   ) =>
-    setPractices(p => [...p, { id: id(), teamId, date, startTime, drills }]);
+    setPractices((p) => [
+      ...p,
+      { id: id(), teamId, date, startTime, drills },
+    ]);
   const updatePractice = (
-    id: string,
-    teamId: string,
+    id: number,
+    teamId: number,
     date: string,
     startTime: string,
-    drills: PracticeDrill[]
+    drills: PracticeDrill[],
   ) =>
-    setPractices(p =>
-      p.map(pr =>
-        pr.id === id ? { ...pr, teamId, date, startTime, drills } : pr
-      )
+    setPractices((p) =>
+      p.map((pr) =>
+        pr.id === id ? { ...pr, teamId, date, startTime, drills } : pr,
+      ),
     );
-  const removePractice = (id: string) =>
-    setPractices(p => p.filter(pr => pr.id !== id));
+  const removePractice = (id: number) =>
+    setPractices((p) => p.filter((pr) => pr.id !== id));
 
   return (
     <DataContext.Provider

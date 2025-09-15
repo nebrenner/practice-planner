@@ -8,7 +8,7 @@ export default function TeamsScreen() {
     <View style={styles.container}>
       <FlatList
         data={teams}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Link href={`/teams/${item.id}`} style={styles.name}>

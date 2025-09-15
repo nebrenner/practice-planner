@@ -5,8 +5,9 @@ import { useData } from '../../src/contexts/DataContext';
 
 export default function EditDrill() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const drillId = Number(id);
   const { drills, updateDrill, removeDrill } = useData();
-  const drill = drills.find(d => d.id === id);
+  const drill = drills.find(d => d.id === drillId);
   const [name, setName] = useState(drill?.name ?? '');
   const [minutes, setMinutes] = useState(
     drill ? String(drill.defaultMinutes) : ''
