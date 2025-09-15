@@ -62,6 +62,47 @@ function id() {
   return Date.now().toString();
 }
 
+const DB_NAME = 'practice-planner';
+const STORE_NAME = 'data';
+const KEY = 'state';
+
+function openDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(STORE_NAME);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function readState(db: IDBDatabase) {
+  return new Promise<
+    { teams?: Team[]; drills?: Drill[]; practices?: Practice[] } | undefined
+  >(resolve => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(KEY);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(undefined);
+  });
+}
+
+async function saveState(data: {
+  teams: Team[];
+  drills: Drill[];
+  practices: Practice[];
+}) {
+  const db = await openDb();
+  return new Promise<void>(resolve => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(data, KEY);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [drills, setDrills] = useState<Drill[]>([]);
@@ -69,29 +110,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Load any saved data on first render
   useEffect(() => {
-    if (typeof localStorage === 'undefined') return;
-    try {
-      const raw = localStorage.getItem('practice-planner:data');
-      if (raw) {
-        const parsed = JSON.parse(raw) as {
-          teams?: Team[];
-          drills?: Drill[];
-          practices?: Practice[];
-        };
-        setTeams(parsed.teams ?? []);
-        setDrills(parsed.drills ?? []);
-        setPractices(parsed.practices ?? []);
-      }
-    } catch {}
+    if (typeof indexedDB === 'undefined') return;
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const db = await openDb();
+        const data = await readState(db);
+        if (!cancelled && data) {
+          setTeams(data.teams ?? []);
+          setDrills(data.drills ?? []);
+          setPractices(data.practices ?? []);
+        }
+      } catch {}
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist whenever data changes
   useEffect(() => {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(
-      'practice-planner:data',
-      JSON.stringify({ teams, drills, practices })
-    );
+    if (typeof indexedDB === 'undefined') return;
+
+    saveState({ teams, drills, practices }).catch(() => {});
   }, [teams, drills, practices]);
 
   const addTeam = (name: string) => setTeams(t => [...t, { id: id(), name }]);
