@@ -14,7 +14,6 @@ export function showDrillDescription(drill?: Pick<Drill, 'name' | 'description'>
     if (typeof window !== 'undefined' && typeof window.alert === 'function') {
       window.alert(`${drill.name}\n\n${message}`);
     } else {
-      // eslint-disable-next-line no-console
       console.warn('Unable to display drill description: alert is not available.');
     }
     return;
