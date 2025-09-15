@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useData, Drill, PracticeDrill } from '../contexts/DataContext';
 import { formatDate, formatTime, parseDate, parseTime } from '../utils/date';
 // DateTimePicker is not available on web, so require dynamically
