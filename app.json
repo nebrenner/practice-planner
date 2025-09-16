@@ -12,7 +12,8 @@
     },
     "android": {
       "edgeToEdgeEnabled": false,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.nealbrenner.practiceplanner"
     },
     "androidStatusBar": {
       "translucent": false,
@@ -41,6 +42,12 @@
       "typedRoutes": true,
       "reactCompiler": true,
       "baseUrl": "/practice-planner"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "44ff60aa-d3c1-42a2-bf9e-72bcfd68d9b2"
+      }
     }
   }
 }
