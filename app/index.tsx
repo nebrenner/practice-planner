@@ -7,6 +7,7 @@ import {
   Button,
   Alert,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { Link } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -329,7 +330,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} style={styles.scrollView}>
       <Text style={styles.title}>Practice Planner</Text>
       <Text>Plan practices and run sessions offline.</Text>
       <View style={styles.links}>
@@ -404,13 +405,16 @@ export default function HomeScreen() {
           onChange={handleWebFileChange}
         />
       ) : null}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
+  },
+  container: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
