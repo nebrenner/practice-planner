@@ -94,6 +94,16 @@ export function computeSchedule(
 }
 ```
 
+### Deploying
+```
+git pull
+npm install
+npm start
+<open Expo Go on Android>
+eas login <only once maybe?>
+eas build -p android --profile preview
+```
+
 ### Next Steps
 
 * Implement schema and repositories in `/db` and `/src/data`
