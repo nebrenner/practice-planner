@@ -4,7 +4,11 @@ import React, {
   useState,
   ReactNode,
   useEffect,
+  useCallback,
+  useRef,
 } from 'react';
+import { Platform } from 'react-native';
+import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
 export type Team = {
   id: number;
@@ -98,6 +102,8 @@ function id() {
 const DB_NAME = 'practice-planner';
 const STORE_NAME = 'data';
 const KEY = 'state';
+const SQLITE_DB_NAME = 'practice-planner.db';
+const SQLITE_TABLE = 'kv_store';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -191,6 +197,34 @@ function sanitizeData(input: unknown): DataSnapshot {
   };
 }
 
+async function openNativeDb() {
+  const db = await openDatabaseAsync(SQLITE_DB_NAME);
+  await db.execAsync(`
+    PRAGMA journal_mode = WAL;
+    CREATE TABLE IF NOT EXISTS ${SQLITE_TABLE} (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    );
+  `);
+  return db;
+}
+
+async function readNativeState(db: SQLiteDatabase) {
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM ${SQLITE_TABLE} WHERE key = ?`,
+    [KEY],
+  );
+  return row?.value ?? null;
+}
+
+async function saveNativeState(db: SQLiteDatabase, data: DataSnapshot) {
+  const payload = JSON.stringify(data);
+  await db.runAsync(
+    `INSERT OR REPLACE INTO ${SQLITE_TABLE} (key, value) VALUES (?, ?)`,
+    [KEY, payload],
+  );
+}
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1);
@@ -235,38 +269,85 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [drills, setDrills] = useState<Drill[]>([]);
   const [practices, setPractices] = useState<Practice[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const sqliteDbRef = useRef<SQLiteDatabase | null>(null);
+
+  const applySnapshot = useCallback((snapshot: DataSnapshot) => {
+    setTeams(snapshot.teams);
+    setDrills(snapshot.drills);
+    setPractices(snapshot.practices);
+    setTemplates(snapshot.templates);
+  }, []);
 
   // Load any saved data on first render
   useEffect(() => {
-    if (typeof indexedDB === 'undefined') return;
+    if (Platform.OS === 'web') {
+      if (typeof indexedDB === 'undefined') return;
+
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const db = await openDb();
+          const data = await readState(db);
+          if (!cancelled && data) {
+            applySnapshot(sanitizeData(data));
+          }
+        } catch {}
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }
 
     let cancelled = false;
 
-    async function load() {
+    (async () => {
       try {
-        const db = await openDb();
-        const data = await readState(db);
-        if (!cancelled && data) {
-          const normalized = sanitizeData(data);
-          setTeams(normalized.teams);
-          setDrills(normalized.drills);
-          setPractices(normalized.practices);
-          setTemplates(normalized.templates);
+        const db = await openNativeDb();
+        if (cancelled) {
+          await db.closeAsync().catch(() => {});
+          return;
+        }
+        sqliteDbRef.current = db;
+        const serialized = await readNativeState(db);
+        if (!cancelled && serialized) {
+          try {
+            applySnapshot(sanitizeData(JSON.parse(serialized)));
+          } catch {}
         }
       } catch {}
-    }
-
-    load();
+    })();
 
     return () => {
       cancelled = true;
     };
+  }, [applySnapshot]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    return () => {
+      const db = sqliteDbRef.current;
+      sqliteDbRef.current = null;
+      if (db) {
+        db.closeAsync().catch(() => {});
+      }
+    };
   }, []);
 
   useEffect(() => {
-    if (typeof indexedDB === 'undefined') return;
+    if (Platform.OS === 'web') {
+      if (typeof indexedDB === 'undefined') return;
 
-    saveState({ teams, drills, practices, templates }).catch(() => {});
+      saveState({ teams, drills, practices, templates }).catch(() => {});
+      return;
+    }
+
+    const db = sqliteDbRef.current;
+    if (!db) return;
+
+    saveNativeState(db, { teams, drills, practices, templates }).catch(() => {});
   }, [teams, drills, practices, templates]);
 
   const addTeam = (name: string) =>
